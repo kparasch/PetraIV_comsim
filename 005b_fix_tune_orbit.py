@@ -64,10 +64,7 @@ def tune_response(SC, q_knob, dk = 1e-5):
 
 
 
-    
-
-def get_tbt_data(SC):
-    kick = 10e-6
+def get_tbt_data(SC, kick=1e-6):
     tbt_data = np.full((2, len(SC.ORD.BPM), SC.INJ.nTurns), np.nan)
     tbt_data = np.full((2, len(SC.ORD.BPM), SC.INJ.nTurns), np.nan)
 
@@ -85,11 +82,18 @@ def get_tbt_data(SC):
     return tbt_data
 
 
-def measure_tune(SC):
+def measure_tune(SC, kick=1e-6):
     trackMode = SC.INJ.trackMode
     SC.INJ.trackMode = 'TBT'
     SC.INJ.nTurns = 100 
-    tbt_data = get_tbt_data(SC)
+    tbt_data = get_tbt_data(SC, kick=kick)
+
+    NN = SC.INJ.nTurns
+    while np.sum(np.isnan(tbt_data[0,0,:NN])) or np.sum(np.isnan(tbt_data[1,0,:NN])):
+       LOGGER.info(f'Lost in less than {NN} turns, reducing tracking turns to {NN//2}') 
+       NN = NN//2
+    tbt_data = tbt_data[:,:,:NN]
+
     tunes = np.full((2, len(SC.ORD.BPM)), np.nan)
     for ii in range(2):
         for jj in range(len(SC.ORD.BPM)):
