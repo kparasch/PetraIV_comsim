@@ -11,6 +11,7 @@ import argparse
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--seed', type=int, default=1)
+argparser.add_argument('--plot', action='store_true')
 args = argparser.parse_args()
 
 LOGGER = logging_tools.get_logger(__name__)
@@ -149,4 +150,4 @@ ax2.plot(bp0[1], '.')
 ax2.plot(bp1[1], '.')
 pSC._save_and_check_repr(SC.RING, f'after_tune_orbit_seed{seed}.repr')
 
-plt.show()
+plt.show(block=args.plot)
