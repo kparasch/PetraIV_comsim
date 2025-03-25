@@ -7,6 +7,8 @@ import argparse
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--seed', type=int, default=1)
+argparser.add_argument('--alpha', type=int, default=50)
+argparser.add_argument('--plot', action='store_true')
 args = argparser.parse_args()
 
 LOGGER = logging_tools.get_logger(__name__)
@@ -33,9 +35,9 @@ LOGGER.info("Beam re-threading finished")
 # SC.RING = switch_rf(SC.RING, SC.ORD.RF, False)
 SC.INJ.nShots = 3
 
-SC = pSC.run_multipoles(SC, Pem, run_rm=False, ramp_multipoles=True, nsteps=10)
+SC = pSC.run_multipoles(SC, Pem, run_rm=False, ramp_multipoles=True, nsteps=10, alpha=args.alpha)
 SC.INJ.nShots = 1
 
 pSC._save_and_check_repr(SC.RING, f'after_multipole_rampup_seed{seed}.repr')
 
-plt.show()
+plt.show(block=args.plot)
