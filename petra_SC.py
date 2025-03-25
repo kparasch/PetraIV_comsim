@@ -412,8 +412,9 @@ def multipole_ramp_up(SC, Pem, run_rm, nsteps):
                 if run_rm else load_response_matrices(trajectory_rm_names))
     SC.INJ.nTurns = 2
     eps = 1E-4  # Noise level
-    SC = correct(SC, RM2, alpha=20, target=50e-6, maxsteps=50, eps=eps)
-    SC = balance(SC, RM2, alpha=15, damping=0.3, maxsteps=32, eps=eps)
+    alpha = 50
+    SC = correct(SC, RM2, alpha=alpha, target=50e-6, maxsteps=50, eps=eps)
+    SC = balance(SC, RM2, alpha=alpha, damping=0.3, maxsteps=32, eps=eps)
     max_turns, fraction_survived = beam_transmission(SC, nParticles=Pem.n_part_beam_capture,
                                                      nTurns=Pem.n_turns_beam_capture,
                                                      plot=True)
@@ -422,12 +423,12 @@ def multipole_ramp_up(SC, Pem, run_rm, nsteps):
         SC.set_magnet_setpoints(sc_tools.ords_from_regex(SC.RING, '^SF|^SD'), setp, False, 2,  method='rel')
         # TODO at which point are octupoles actually needed
         SC.set_magnet_setpoints(sc_tools.ords_from_regex(SC.RING, '^OD|^OF'), setp, False, 3,  method='rel')
-        SC = balance(SC, RM2, alpha=15, maxsteps=32, eps=eps)
+        SC = balance(SC, RM2, alpha=alpha, maxsteps=32, eps=eps)
         max_turns, fraction_survived = beam_transmission(SC, nParticles=Pem.n_part_beam_capture,
                                                      nTurns=Pem.n_turns_beam_capture,
                                                      plot=True)
 
-    SC = balance(SC, RM2, alpha=10, maxsteps=32, eps=eps)
+    SC = balance(SC, RM2, alpha=alpha, maxsteps=32, eps=eps)
 
     max_turns, fraction_survived = beam_transmission(SC, nParticles=Pem.n_part_beam_capture,
                                                  nTurns=Pem.n_turns_beam_capture,
