@@ -406,13 +406,12 @@ def assumed_bba_result(SC, Pem, bba_offset):
     return SC
 
 
-def multipole_ramp_up(SC, Pem, run_rm, nsteps):
+def multipole_ramp_up(SC, Pem, run_rm, nsteps, alpha=50):
     trajectory_rm_names = ("rm1.npz", "rm2.npz")
     RM1, RM2 = (calculate_and_save_response_matrices(SC, trajectory_rm_names)
                 if run_rm else load_response_matrices(trajectory_rm_names))
     SC.INJ.nTurns = 2
     eps = 1E-4  # Noise level
-    alpha = 50
     SC = correct(SC, RM2, alpha=alpha, target=50e-6, maxsteps=50, eps=eps)
     SC = balance(SC, RM2, alpha=alpha, damping=0.3, maxsteps=32, eps=eps)
     max_turns, fraction_survived = beam_transmission(SC, nParticles=Pem.n_part_beam_capture,
