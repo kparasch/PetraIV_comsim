@@ -30,7 +30,7 @@ OUT_DIR = ""
 
 class PetraErrorModel:
     # switches
-    injection_off_axis_factor = 1
+    injection_off_axis_factor = 0
     inj_error_factor = 1
     inj_jitter_factor = 1
     magnet_error_factor = 1
@@ -326,7 +326,7 @@ def beam_threading(SC, Pem, run_rm):
     SC = first_turn(SC, RM1, alpha=100, maxsteps=200)
     max_turns, fraction_lost = beam_transmission(SC, nParticles=Pem.n_part_beam_capture,
                                                  nTurns=Pem.n_turns_beam_capture, plot=True)
-    for alpha in (100, 50):  #, 20 , 5):
+    for alpha in (100, 50, 20, 5):
         LOGGER.info(f"{alpha=}")
         SC = correct(SC, RM1, alpha=alpha, target=50e-6, maxsteps=200, eps=eps)
         max_turns, fraction_lost = beam_transmission(SC, nParticles=Pem.n_part_beam_capture,
