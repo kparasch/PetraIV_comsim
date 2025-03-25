@@ -501,9 +501,9 @@ def run_trajectory_bba(SC, knobs, run_bba, n_bpms=None):
     return SC
 
 
-def run_multipoles(SC, Pem, run_rm, ramp_multipoles, nsteps):
+def run_multipoles(SC, Pem, run_rm, ramp_multipoles, nsteps, alpha=50):
     if ramp_multipoles:
-        SC = multipole_ramp_up(SC, Pem, run_rm, nsteps)
+        SC = multipole_ramp_up(SC, Pem, run_rm, nsteps, alpha=alpha)
         _save_and_check_repr(SC.RING, f"after_multipoles.repr")
     else:
         SC.RING = _load_repr(f"{OUT_DIR}after_multipoles.repr")
