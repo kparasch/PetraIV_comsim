@@ -10,6 +10,7 @@ import argparse
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--seed', type=int, default=1)
+argparser.add_argument('--plot', action='store_true')
 args = argparser.parse_args()
 
 LOGGER = logging_tools.get_logger(__name__)
@@ -24,7 +25,7 @@ pSC.number_of_elements(SC)
 knobs = pSC.PetraKnobs(SC.RING)
 SC.plot = False
 # repr_file = f'after_reramp_seed{seed}.repr'
-repr_file = f'after_2nd_tune_orbit_seed{seed}.repr'
+repr_file = f'after_3rd_tune_orbit_seed{seed}.repr'
 SC.RING = pSC._load_repr(repr_file)
 SC.RING = pSC.fix_apertures(SC.RING)
 
@@ -45,19 +46,19 @@ max_dk2 = 0.5e-2
 
 SC.orbits = []
 SC.bps = []
-SC, bba_offsets_skew, bba_offset_errors_skew = orbit_bba(SC, bpm_ords[:,:4], mag_ords[:,:4], quad_is_skew,
+SC, bba_offsets_skew, bba_offset_errors_skew = orbit_bba(SC, bpm_ords, mag_ords, quad_is_skew,
                                                          n_k1_steps, max_dk1, n_k2_steps, max_dk2, RM=ORM,
                                                          plot_results=True)
 
-# mag_ords = np.tile(knobs.bba_quads, (2, 1))
-# bpm_ords = np.tile(knobs.bpms_no_disp, (2, 1))
-# quad_is_skew = False
-# 
-# SC, bba_offsets_norm, bba_offset_errors_norm = orbit_bba(SC, bpm_ords, mag_ords, quad_is_skew,
-#                                                          n_k1_steps, max_dk1, n_k2_steps, max_dk2, RM=ORM,
-#                                                          plot_results=True)
+mag_ords = np.tile(knobs.bba_quads, (2, 1))
+bpm_ords = np.tile(knobs.bpms_no_disp, (2, 1))
+quad_is_skew = False
 
-# pSC._save_and_check_repr(SC.RING, f'after_2nd_orbit_BBA_seed{seed}.repr')
+SC, bba_offsets_norm, bba_offset_errors_norm = orbit_bba(SC, bpm_ords, mag_ords, quad_is_skew,
+                                                         n_k1_steps, max_dk1, n_k2_steps, max_dk2, RM=ORM,
+                                                         plot_results=True)
+
+pSC._save_and_check_repr(SC.RING, f'after_2nd_orbit_BBA_seed{seed}.repr')
 
 slopes = []
 intercepts = []
@@ -79,4 +80,4 @@ for k2_step in range(n_k2_steps):
         plt.plot(bps[:,k2_step]*1e6, orbits[:, k2_step, bpi]*1e6, '.-', lw=0.5, c=cols[k2_step], alpha=0.3 )
 # plt.show()
 
-plt.show()
+plt.show(block=args.plot)
