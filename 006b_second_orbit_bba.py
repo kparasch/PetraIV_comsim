@@ -44,8 +44,8 @@ max_dk1 = 10e-6
 n_k2_steps = 2
 max_dk2 = 0.5e-2
 
-SC.orbits = []
-SC.bps = []
+# SC.orbits = []
+# SC.bps = []
 SC, bba_offsets_skew, bba_offset_errors_skew = orbit_bba(SC, bpm_ords, mag_ords, quad_is_skew,
                                                          n_k1_steps, max_dk1, n_k2_steps, max_dk2, RM=ORM,
                                                          plot_results=True)
@@ -60,24 +60,24 @@ SC, bba_offsets_norm, bba_offset_errors_norm = orbit_bba(SC, bpm_ords, mag_ords,
 
 pSC._save_and_check_repr(SC.RING, f'after_2nd_orbit_BBA_seed{seed}.repr')
 
-slopes = []
-intercepts = []
-orbits = SC.orbits[2]
-bps = SC.bps[2]
-cols = ['r','b']
-plt.figure()
-for k2_step in range(n_k2_steps):
-    for bpm in range(orbits.shape[2]):
-        orb = orbits[:, k2_step, bpm]
-        bp = bps[:, k2_step]
-        mask = np.logical_and(~np.isnan(bp), ~np.isnan(orb))
-        p = np.polyfit(bp, orb, 1)
-        slopes.append(p[0])
-        intercepts.append(p[1])
-        
-for k2_step in range(n_k2_steps):
-    for bpi in range(orbits.shape[2]):
-        plt.plot(bps[:,k2_step]*1e6, orbits[:, k2_step, bpi]*1e6, '.-', lw=0.5, c=cols[k2_step], alpha=0.3 )
+# slopes = []
+# intercepts = []
+# orbits = SC.orbits[2]
+# bps = SC.bps[2]
+# cols = ['r','b']
+# plt.figure()
+# for k2_step in range(n_k2_steps):
+#     for bpm in range(orbits.shape[2]):
+#         orb = orbits[:, k2_step, bpm]
+#         bp = bps[:, k2_step]
+#         mask = np.logical_and(~np.isnan(bp), ~np.isnan(orb))
+#         p = np.polyfit(bp, orb, 1)
+#         slopes.append(p[0])
+#         intercepts.append(p[1])
+#         
+# for k2_step in range(n_k2_steps):
+#     for bpi in range(orbits.shape[2]):
+#         plt.plot(bps[:,k2_step]*1e6, orbits[:, k2_step, bpi]*1e6, '.-', lw=0.5, c=cols[k2_step], alpha=0.3 )
 # plt.show()
 
 plt.show(block=args.plot)
