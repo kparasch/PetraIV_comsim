@@ -31,12 +31,13 @@ OUT_DIR = ""
 class PetraErrorModel:
     # switches
     injection_off_axis_factor = 0
-    inj_error_factor = 1
-    inj_jitter_factor = 1
+    inj_error_factor = 0
+    inj_jitter_factor = 0
     magnet_error_factor = 1
     diag_error_factor = 1
     rf_error_factor = 0
     circ_error_factor = 0
+    girder_factor = 1
 
     # bases
     roll_base = np.array([1, 0, 0])
@@ -58,8 +59,8 @@ class PetraErrorModel:
     dip_calibration = 1 * 1E-3 * magnet_error_factor
 
     section_offset = 0 * 100E-6 * offset_base2 * magnet_error_factor
-    girder_offset = 1 * 150E-6 * offset_base2 * magnet_error_factor
-    girder_roll = 1 * 200E-6 * roll_base * magnet_error_factor
+    girder_offset = girder_factor * 150E-6 * offset_base2 * magnet_error_factor
+    girder_roll = girder_factor * 200E-6 * roll_base * magnet_error_factor
 
     #  Errors of diagnostic devices
     bpm_calibration = 1 * 5E-2 * two_ones * diag_error_factor
@@ -220,7 +221,7 @@ def register_petra_stuff(file_name, Pem: PetraErrorModel):
                         VCM=Pem.cm_limit,
                         CalErrorB=np.array([Pem.cm_calibration, 0]),
                         CalErrorA=np.array([Pem.cm_calibration, 0]),
-                        MagnetRoll=Pem.magnet_roll)
+                        MagnetRoll=Pem.cm_roll)
     # Define slow and fast CMs (these fields are just for convience stored in the SC structure but are not used)
     # What is the name of fast correctors in straights - missing below as they miss F in the name
     SC.ORD.FCM = [sc_tools.ords_from_regex(SC.RING, '^CXYSF|^CXSF'), sc_tools.ords_from_regex(SC.RING, '^CXYSF|^CYSF')]
