@@ -35,5 +35,6 @@ SC.RING = pSC.fix_apertures(SC.RING)
 SC.INJ.Z0 = np.zeros(6)
 SC.INJ.trackMode = 'ORB'
 RM = SCgetModelRM(SC, SC.ORD.BPM, SC.ORD.CM, trackMode='ORB', useIdealRing=True)
-np.savez(f"ORM_{repr_file}", RM)
+np.savez("ORM_ideal", RM)
+#np.savez(f"ORM_{repr_file}", RM)
 #pSC.calculate_and_save_response_matrices(SC, [f'ORM1_{repr_file}', f'ORM2_{repr_file}'])
