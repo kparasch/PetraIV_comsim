@@ -101,7 +101,7 @@ class PetraErrorModel:
     dyn_aper_steps = 25
 
     n_correctors = (762, 762)  # Horizontal and vertical
-    n_bpms = 790
+    n_bpms = 786
     n_quads = 1348
 
 
