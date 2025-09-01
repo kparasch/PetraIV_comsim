@@ -10,6 +10,7 @@ import argparse
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--seed', type=int, default=1)
+argparser.add_argument('--plot', action='store_true')
 args = argparser.parse_args()
 
 LOGGER = logging_tools.get_logger(__name__)
@@ -18,12 +19,13 @@ seed = args.seed
 np.random.seed(seed)
 
 Pem = pSC.PetraErrorModel()
-p424 = 'p4_H6BA_v4_2_4.mat'
+p424 = 'p4_H6BA_v4_3_3.mat'
 SC = pSC.register_petra_stuff(p424, Pem)
 pSC.number_of_elements(SC)
 knobs = pSC.PetraKnobs(SC.RING)
 SC.plot = False
-repr_file = f'after_third_tune_orbit_seed{seed}.repr'
+repr_file = f'after_bpm05_BBA_seed{seed}.repr'
+#repr_file = f'after_third_tune_orbit_seed{seed}.repr'
 #repr_file = f'after_second_orbit_BBA_seed{seed}.repr'
 SC.RING = pSC._load_repr(repr_file)
 SC.RING = pSC.fix_apertures(SC.RING)
