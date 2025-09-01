@@ -25,7 +25,10 @@ SC.RING = pSC.fix_apertures(SC.RING)
 
 SC.INJ.Z0 = np.zeros(6)
 SC.RING = pSC.switch_rf(SC.RING, SC.ORD.RF, False)
-SC = pSC.run_trajectory_bba(SC, knobs, run_bba=True, n_bpms=None)
+SC.INJ.nTurns = 2
+SC.INJ.nParticles = 1
+SC.INJ.nShots = 1
+SC = pSC.perform_trajectory_bba(SC, knobs, n_bpms=None)
 
 pSC._save_and_check_repr(SC.RING, f'after_trajBBA_seed{seed}.repr')
 

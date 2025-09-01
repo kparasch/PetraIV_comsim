@@ -352,12 +352,26 @@ def beam_threading(SC, Pem, run_rm):
     return SC
 
 
-def perform_trajectory_bba(SC, knobs, n_bpms=None):
+def perform_trajectory_bba(SC, knobs, n_bpms=None, only_failed=False):
     skew_ords = np.tile(knobs.bba_sextupoles, (2, 1))
     bpms_skew = np.tile(knobs.bpms_disp_bump, (2, 1))
+    failed_bpms = []
+    failed_quads = []
     if n_bpms is not None:
         skew_ords = skew_ords[:, :n_bpms]
         bpms_skew = bpms_skew[:, :n_bpms]
+    if only_failed:
+        assert n_bpms is None
+        for ii, bpmid in enumerate(bpms_skew[0]):
+            has_BBA = SC.RING[bpmid].has_BBA 
+            if not has_BBA[0] or not has_BBA[1]:
+                failed_bpms.append(bpmid)
+                failed_quads.append(skew_ords[0][ii])
+        
+        skew_ords = np.tile(np.array(failed_quads), (2,1))
+        bpms_skew = np.tile(np.array(failed_bpms), (2,1))
+        print(f'Retrying {len(bpms_skew[0])} BPMs.')
+
     SC, bba_offsets, bba_offset_errors = trajectory_bba(
         SC, bpms_skew, skew_ords, n_steps=6, num_downstream_bpms=50,
         q_ord_phase=knobs.quads[2], q_ord_setpoints=np.array([0.95, 0.8, 0.7, 1.0, 1.05]),
@@ -374,6 +388,18 @@ def perform_trajectory_bba(SC, knobs, n_bpms=None):
     if n_bpms is not None:
         normal_ords = normal_ords[:, :n_bpms]
         bpms_normal = bpms_normal[:, :n_bpms]
+    if only_failed:
+        assert n_bpms is None
+        for ii, bpmid in enumerate(bpms_normal[0]):
+            has_BBA = SC.RING[bpmid].has_BBA 
+            if not has_BBA[0] or not has_BBA[1]:
+                failed_bpms.append(bpmid)
+                failed_quads.append(normal_ords[0][ii])
+        
+        normal_ords = np.tile(np.array(failed_quads), (2,1))
+        bpms_normal = np.tile(np.array(failed_bpms), (2,1))
+        print(f'Retrying {len(bpms_skew[0])} BPMs.')
+
     SC, bba_offsets, bba_offset_errors = trajectory_bba(
         SC, bpms_normal, normal_ords, n_steps=6, num_downstream_bpms=50,
         q_ord_phase=knobs.quads[2], q_ord_setpoints=np.array([0.95, 0.8, 0.7, 1.0, 1.05]),
@@ -488,19 +514,6 @@ def run_beam_threading(SC, Pem, run_rm, run_threading):
     return SC
 
 
-def run_trajectory_bba(SC, knobs, run_bba, n_bpms=None):
-    if run_bba:
-        SC.INJ.nTurns = 2
-        SC.INJ.nParticles = 1
-        SC.INJ.nShots = 1
-        SC = perform_trajectory_bba(SC, knobs, n_bpms=n_bpms)
-        _save_and_check_repr(SC.RING, "after_bba.repr")
-    else:
-        SC.RING = _load_repr(f"{OUT_DIR}after_bba.repr")
-        SC.RING = fix_apertures(SC.RING)
-    return SC
-
-
 def run_multipoles(SC, Pem, run_rm, ramp_multipoles, nsteps, alpha=50):
     if ramp_multipoles:
         SC = multipole_ramp_up(SC, Pem, run_rm, nsteps, alpha=alpha)
@@ -509,6 +522,4 @@ def run_multipoles(SC, Pem, run_rm, ramp_multipoles, nsteps, alpha=50):
         SC.RING = _load_repr(f"{OUT_DIR}after_multipoles.repr")
         SC.RING = fix_apertures(SC.RING)
     return SC
-
-
 

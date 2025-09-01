@@ -65,25 +65,27 @@ def tune_response(SC, q_knob, dk = 1e-5):
 
 
 
-def get_tbt_data(SC, kick=1e-6):
-    tbt_data = np.full((2, len(SC.ORD.BPM), SC.INJ.nTurns), np.nan)
-    tbt_data = np.full((2, len(SC.ORD.BPM), SC.INJ.nTurns), np.nan)
+def get_tbt_data(SC, kick=10e-6):
+    tbt_data_out = np.full((2, len(SC.ORD.BPM), SC.INJ.nTurns), np.nan)
 
-    SC.INJ.Z0[1] = kick
-    tbt_data_x, transm = bpm_reading(SC)
-    SC.INJ.Z0[1] = 0
-    SC.INJ.Z0[3] = kick
-    tbt_data_y, transm = bpm_reading(SC)
-    SC.INJ.Z0[3] = 0
+    old_Z0 = SC.INJ.Z0.copy()
+
+    SC.INJ.Z0 = SC.RING.find_orbit6()[0]
+    SC.INJ.Z0[1] += kick
+    SC.INJ.Z0[3] += kick
+    tbt_data, transm = bpm_reading(SC)
+    #tbt_data_y, transm = bpm_reading(SC)
+
+    SC.INJ.Z0 = old_Z0
 
     for turn in range(SC.INJ.nTurns):
-        tbt_data[0, :, turn] = tbt_data_x[0, turn*len(SC.ORD.BPM):(turn+1)*len(SC.ORD.BPM)]
-        tbt_data[1, :, turn] = tbt_data_y[1, turn*len(SC.ORD.BPM):(turn+1)*len(SC.ORD.BPM)]
+        tbt_data_out[0, :, turn] = tbt_data[0, turn*len(SC.ORD.BPM):(turn+1)*len(SC.ORD.BPM)]
+        tbt_data_out[1, :, turn] = tbt_data[1, turn*len(SC.ORD.BPM):(turn+1)*len(SC.ORD.BPM)]
 
-    return tbt_data
+    return tbt_data_out
 
 
-def measure_tune(SC, kick=1e-6):
+def measure_tune(SC, kick=10e-6):
     trackMode = SC.INJ.trackMode
     SC.INJ.trackMode = 'TBT'
     SC.INJ.nTurns = 100 
@@ -95,19 +97,29 @@ def measure_tune(SC, kick=1e-6):
        NN = NN//2
     tbt_data = tbt_data[:,:,:NN]
 
-    tunes = np.full((2, len(SC.ORD.BPM)), np.nan)
-    for ii in range(2):
-        for jj in range(len(SC.ORD.BPM)):
-            tbt_data[ii, jj, :] = tbt_data[ii, jj, :] - np.mean(tbt_data[ii, jj, :])
-            tunes[ii, jj] = abs(nafflib.tune(tbt_data[ii, jj, :], window_order=0))
+    dqtol = 0.01
+    x = tbt_data[0]
+    y = tbt_data[1]
+    amp_x, harm_x = nafflib.harmonics(x[0,:] - np.mean(x[0,:]), num_harmonics=2)
+    amp_y, harm_y = nafflib.harmonics(y[0,:] - np.mean(y[0,:]), num_harmonics=2)
+    qx = harm_x[0]
+    qy = None
+    for hy in harm_y:
+        if abs(hy - qx) < dqtol:
+            continue
+        qy = hy
+
+    tune = np.array([qx,qy])
     
     SC.INJ.trackMode = trackMode
-    tune = np.nanmean(tunes, axis=1)
     return tune
 
 def correct_tune(SC, target_tune, iTRM, qf, qd, gain=0.8, niter=1):
     for ii in range(niter):
         tune = measure_tune(SC)
+        if np.any(tune != tune):
+            print('Could not find tune, skipping correction.')
+            return
         tune_error = tune - target_tune
         print(f'Iteration {ii}, measured tune:  {tune[0]:.4f}, {tune[1]:.4f}')
         knob_error = np.dot(iTRM, -tune_error)
@@ -130,13 +142,13 @@ iTRM = np.linalg.inv(TRM)
 
 
 SC.INJ.trackMode = 'ORB'
-alpha=100
+alpha=10
 
-for _ in range(3):
+for _ in range(20):
     bp1, tr = bpm_reading(SC)
-    correct_tune(SC, ideal_tune, iTRM, qf1, qd02, gain=0.5, niter=3)
+    correct_tune(SC, ideal_tune, iTRM, qf1, qd02, gain=0.2, niter=1)
     LOGGER.info(f"R.m.s. orbit: x: {np.std(bp1[0])*1e6:.1f} um, y: {np.std(bp1[1])*1e6:.1f} um")
-    correct(SC, ORM, alpha=alpha)
+    correct(SC, ORM, alpha=alpha, damping=0.2, maxsteps=1)
     LOGGER.info(f'Orbit correction with alpha = {alpha:.1f}.')
     bp1, tr = bpm_reading(SC)
     LOGGER.info(f"R.m.s. orbit: x: {np.std(bp1[0])*1e6:.1f} um, y: {np.std(bp1[1])*1e6:.1f} um")
