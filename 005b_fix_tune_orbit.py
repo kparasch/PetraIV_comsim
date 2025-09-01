@@ -143,8 +143,8 @@ iTRM = np.linalg.inv(TRM)
 
 SC.INJ.trackMode = 'ORB'
 alpha=10
-
-for _ in range(20):
+n_iter = 100
+for _ in range(n_iter):
     bp1, tr = bpm_reading(SC)
     correct_tune(SC, ideal_tune, iTRM, qf1, qd02, gain=0.2, niter=1)
     LOGGER.info(f"R.m.s. orbit: x: {np.std(bp1[0])*1e6:.1f} um, y: {np.std(bp1[1])*1e6:.1f} um")
