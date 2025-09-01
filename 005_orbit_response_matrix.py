@@ -23,7 +23,7 @@ else:
     repr_file = args.repr
 
 Pem = pSC.PetraErrorModel()
-p424 = 'p4_H6BA_v4_2_4.mat'
+p424 = 'p4_H6BA_v4_3_3.mat'
 SC = pSC.register_petra_stuff(p424, Pem)
 pSC.number_of_elements(SC)
 knobs = pSC.PetraKnobs(SC.RING)
