@@ -10,6 +10,7 @@ import argparse
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--seed', type=int, default=1)
+argparser.add_argument('--plot', action='store_true')
 args = argparser.parse_args()
 
 LOGGER = logging_tools.get_logger(__name__)
@@ -18,7 +19,7 @@ seed = args.seed
 np.random.seed(seed)
 
 Pem = pSC.PetraErrorModel()
-p424 = 'p4_H6BA_v4_2_4.mat'
+p424 = 'p4_H6BA_v4_3_3.mat'
 SC = pSC.register_petra_stuff(p424, Pem)
 pSC.number_of_elements(SC)
 knobs = pSC.PetraKnobs(SC.RING)
@@ -70,4 +71,4 @@ pSC._save_and_check_repr(SC.RING, f'after_bpm05_BBA_seed{seed}.repr')
 #         plt.plot(bps[:,k2_step]*1e6, orbits[:, k2_step, bpi]*1e6, '.-', c=cols[k2_step] )
 # plt.show()
 
-plt.show()
+plt.show(block=args.plot)
