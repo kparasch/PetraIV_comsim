@@ -1,0 +1,242 @@
+error_table:
+  calibration_error_quads: 0.5e-2
+  calibration_error_other: 1e-2
+  magnet_rolls: 200e-6 #rad
+  magnet_offsets: 30e-6 #m
+  magnet_offsets_straight: 150e-6 #m
+
+  girder_offsets: 150e-6 #m
+  girder_rolls: 200e-6 #rad
+
+  bpm_offsets: 500e-6 #m
+  bpm_rolls: 400e-6 #rad
+  #bpm_orbit_noise: 200e-6 #m
+  bpm_orbit_noise: 0.1e-6 #m
+  bpm_tbt_noise: 50e-6 #m
+  bpm_calibration_error: 5e-2
+
+  corrector_rolls: 200e-6 #rad
+  calibration_error_corrector: 2e-2
+
+parameters:
+  corrector_limit: 550e-6
+
+lattice:
+  lattice_file: data/p4_H6BA_v4_4_for_pySC.mat
+  simulator: at
+
+magnets:
+  dipoles:
+    #conf_type: indiv # implied if not present
+    regex: ^DLQ|^DQ
+    exclude: .*_MARKER
+    components: 
+      - B1: calibration_error_other
+      - B2: null #calibration_error_other
+    roll: magnet_rolls
+    dx: magnet_offsets
+    dy: magnet_offsets
+
+  quads_ad:
+    regex: ^Q[FD].*[AD]|^QD12_S|^QF11_S
+    exclude: ^Q[FD][01].*[AD]_[NSWO].*
+    components:
+      - B2: calibration_error_quads
+    roll: magnet_rolls
+    dx: magnet_offsets
+    dy: magnet_offsets
+  quads_bc:
+    regex: ^Q[FD][5-8][BC]
+    components: 
+      - B2: calibration_error_quads
+    roll: magnet_rolls
+    dx: magnet_offsets
+    dy: magnet_offsets
+  quads_straight:
+    regex: ^Q[FD].*[0-9]_[NSWO].*[LR]$|^Q[FD][01].*[AD]_[NSWO].*|^Q[FD]1_[NSWO]
+    exclude: ^QD12_S|^QF11_S
+    components:
+      - B2: calibration_error_quads
+    roll: magnet_rolls
+    dx: magnet_offsets_straight
+    dy: magnet_offsets_straight
+
+  sd:
+    regex: ^SD
+    components: 
+      - B1L: calibration_error_corrector
+      - A1L: calibration_error_corrector
+      - A2: calibration_error_other
+      - B3: calibration_error_other
+    limits:
+      - B1L: corrector_limit
+      - A1L: corrector_limit
+    roll: magnet_rolls
+    dx: magnet_offsets
+    dy: magnet_offsets
+  sf:
+    regex: ^SF
+    components: 
+      - B3: calibration_error_other
+    roll: magnet_rolls
+    dx: magnet_offsets
+    dy: magnet_offsets
+
+  octupoles: 
+    regex: ^OD1|^OF2
+    components: 
+      - B4: calibration_error_other
+    roll: magnet_rolls
+    dx: magnet_offsets
+    dy: magnet_offsets
+
+  cxysf:
+    regex: ^CXYSFA|^CXYSFD
+    components: 
+      - B1L: calibration_error_corrector
+      - A1L: calibration_error_corrector
+      - A2: calibration_error_other
+    limits:
+      - B1L: corrector_limit
+      - A1L: corrector_limit
+    roll: corrector_rolls
+    dx: magnet_offsets
+    dy: magnet_offsets
+  cxsf:
+    regex: ^CXSFB
+    components: 
+      - B1L: calibration_error_corrector
+      - A1L: calibration_error_corrector
+      - A2: calibration_error_other
+    limits:
+      - B1L: corrector_limit
+      - A1L: corrector_limit
+    roll: corrector_rolls
+    dx: magnet_offsets
+    dy: magnet_offsets
+  cysf:
+    regex: ^CYSFB|^CYSFC
+    components: 
+      - B1L: calibration_error_corrector
+      - A1L: calibration_error_corrector
+      - A2: calibration_error_other
+    limits:
+      - B1L: corrector_limit
+      - A1L: corrector_limit
+    roll: corrector_rolls
+    dx: magnet_offsets
+    dy: magnet_offsets
+  cxysf2:
+    regex: ^CXYSF2
+    components: 
+      - B1L: calibration_error_corrector
+      - A1L: calibration_error_corrector
+      - A2: calibration_error_other
+    limits:
+      - B1L: corrector_limit
+      - A1L: corrector_limit
+    roll: corrector_rolls
+    dx: magnet_offsets
+    dy: magnet_offsets
+  cxs:
+    regex: ^CXS_
+    components: 
+      - B1L: calibration_error_corrector
+      - A1L: calibration_error_corrector
+    limits:
+      - B1L: corrector_limit
+      - A1L: corrector_limit
+    roll: corrector_rolls
+    dx: magnet_offsets_straight
+    dy: magnet_offsets_straight
+  cys:
+    regex: ^CYS_
+    components: 
+      - A1L: calibration_error_corrector
+    limits:
+      - A1L: corrector_limit
+    roll: corrector_rolls
+    dx: magnet_offsets_straight
+    dy: magnet_offsets_straight
+
+rf:
+  main:
+    regex: ^CAV
+    voltage: null # V
+    phase: null # rad
+    frequency: null # Hz
+
+bpms:
+  bpms:  ## looks redundant but allows for different bpm families
+    regex: ^BPM
+    exclude: BPM_TFB|BPM_LFB|BPM_CUR
+    dx: bpm_offsets
+    dy: bpm_offsets
+    roll: bpm_rolls
+    orbit_noise: bpm_orbit_noise
+    tbt_noise: bpm_tbt_noise
+    calibration_error: bpm_calibration_error
+
+supports:
+  - level: 1
+    start_endpoints:
+      regex: GS
+    end_endpoints:
+      regex: GE
+    name: Girder
+    dx: girder_offsets
+    dy: girder_offsets
+    roll: girder_rolls
+    alignment: absolute
+
+tuning:
+  #sort_correctors: True
+  HCORR:
+    - cxysf: B1L
+    - cxsf: B1L
+    - cysf: B1L
+    - cxysf2: B1L
+    - cxs: B1L
+    - sd: B1L
+  VCORR: 
+    - cxysf: A1L
+    - cxsf: A1L
+    - cysf: A1L
+    - cxysf2: A1L
+    - cys: A1L
+    - sd: A1L
+
+  model_RM_folder: ./model_RM
+
+  multipoles:
+    - sd : B3
+    - sf : B3
+    - octupoles : B4
+
+  bba_magnets:
+    - quads_ad: B2
+    - quads_bc: B2
+    - quads_straight: B2
+    - sd: A2
+
+  tune:
+    controls_1:
+      regex: ^QD0U|^QD0A|^QD0D|^QD2U|^QD2A|^QD2D
+      component: B2
+    controls_2:
+      regex: ^QF1U|^QF1A|^QF1D
+      component: B2
+
+  c_minus:
+    controls:
+      - cxysf: A2
+
+injection:
+  betx: 46.022
+  alfx: -0.0217
+  bety: 7.037
+  alfy: -0.1453
+  emit_x: 20e-9
+  emit_y: 2e-9
+  bunch_length: 0.0225
+  energy_spread: 0.002
